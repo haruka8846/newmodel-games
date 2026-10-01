@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#152534">
+  <link rel="icon" href="data:,">
+  <title>灯晶紀行 — シルネの坑道</title>
+  <style>
+    :root { color-scheme: dark; font-family: "Yu Gothic", "Meiryo", sans-serif; background: #152534; color: #edf3ed; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 16px 24px; }
+    main { width: min(1104px, 100%); margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    h1 { font-size: 24px; font-weight: 600; margin: 0; letter-spacing: .13em; }
+    h1 span { margin-left: 16px; color: #a8bcc5; font-size: 12px; font-weight: 400; letter-spacing: .06em; }
+    button { font: inherit; cursor: pointer; color: #dae5e7; border: 1px solid #546674; background: transparent; border-radius: 999px; min-height: 40px; padding: 8px 18px; }
+    button:hover { background: #294353; }
+    button:focus-visible, canvas:focus-visible { outline: 2px solid #f2c775; outline-offset: 4px; }
+    canvas { display: block; width: 100%; height: auto; aspect-ratio: 1104 / 600; background: #172936; image-rendering: pixelated; border: 1px solid #4a606c; }
+    footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; color: #a8bcc5; font-size: 12px; line-height: 1.6; }
+    kbd { font: inherit; color: #edf3ed; }
+    .touch { display: none; justify-content: space-between; gap: 12px; margin-top: 16px; }
+    .dpad { display: grid; grid-template-columns: repeat(3, 44px); gap: 4px; }
+    .dpad button { padding: 0; border-radius: 8px; min-height: 44px; }
+    .dpad button:first-child { grid-column: 2; }
+    .dpad button:nth-child(2) { grid-column: 1; }
+    .confirm { background: #365c69; align-self: center; min-height: 48px; }
+    @media (max-width: 700px) {
+      body { padding: 16px 10px; justify-content: flex-start; }
+      h1 { font-size: 20px; }
+      h1 span { display: block; margin: 4px 0 0; font-size: 10px; }
+      footer { flex-direction: column; gap: 2px; }
+      .touch { display: flex; }
+    }
+    @media (pointer: coarse) { .touch { display: flex; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>灯晶紀行<span>シルネの坑道</span></h1>
+      <button id="restart" type="button">最初から</button>
+    </header>
+    <canvas id="game" width="1104" height="600" tabindex="0" aria-label="灯晶紀行。矢印キーか WASD で移動。戦闘は上下で選び、Enter・Space・Z で決定。"></canvas>
+    <div class="touch" aria-label="ゲーム操作">
+      <div class="dpad">
+        <button data-key="ArrowUp" aria-label="上">↑</button>
+        <button data-key="ArrowLeft" aria-label="左">←</button>
+        <button data-key="ArrowDown" aria-label="下">↓</button>
+        <button data-key="ArrowRight" aria-label="右">→</button>
+      </div>
+      <button class="confirm" data-key="Enter">決定 / 調べる</button>
+    </div>
+    <footer>
+      <span><kbd>↑ ↓ ← → / WASD</kbd> 移動・選択　 <kbd>Enter / Space / Z</kbd> 決定・調べる</span>
+      <span>町で支度を。坑道の奥へ、灯りを取り戻しに。</span>
+    </footer>
+    <p id="status" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);"></p>
+  </main>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>つむじ風カップ - 3D Kart Race</title>
+  <link rel="icon" href="data:,">
+  <style>
+    html, body { margin: 0; height: 100%; background: #101418; overflow: hidden; font-family: system-ui, "Yu Gothic", "Hiragino Sans", sans-serif; }
+    canvas { display: block; }
+    [hidden] { display: none !important; }
+
+    #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .85); user-select: none; }
+    .panel { background: rgba(10, 16, 28, .55); border: 1px solid rgba(255, 255, 255, .25); border-radius: 10px; padding: 8px 14px; }
+    .label { font-size: 12px; letter-spacing: .12em; opacity: .75; }
+    .big { font-size: 40px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+    .big .small { font-size: 18px; font-weight: 600; opacity: .8; }
+    .row { display: flex; justify-content: space-between; gap: 18px; font-size: 16px; font-variant-numeric: tabular-nums; }
+
+    #hud-left { position: absolute; left: 14px; top: 14px; width: 210px; }
+    #standings { list-style: none; margin: 8px 0 0; padding: 6px 10px; font-size: 14px; }
+    #standings li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+    #standings .chip { width: 10px; height: 10px; border-radius: 3px; border: 1px solid rgba(255, 255, 255, .7); }
+    #standings .me { font-weight: 800; color: #ffe27a; }
+
+    #hud-right { position: absolute; right: 14px; top: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    #minimap { width: 190px; height: 190px; background: rgba(10, 16, 28, .45); border: 1px solid rgba(255, 255, 255, .25); border-radius: 10px; }
+
+    #hud-bottom { position: absolute; right: 18px; bottom: 16px; text-align: right; }
+    #speed { font-size: 56px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    #hud-bottom .unit { font-size: 16px; opacity: .8; margin-left: 4px; }
+    #speedbar { width: 240px; height: 8px; margin-left: auto; background: rgba(255, 255, 255, .2); border-radius: 4px; overflow: hidden; }
+    #speedfill { height: 100%; width: 0; background: linear-gradient(90deg, #5ad1ff, #ffe27a, #ff6a3d); }
+
+    #help { position: absolute; left: 14px; bottom: 12px; font-size: 12px; opacity: .8; line-height: 1.6; }
+    #banner { position: absolute; left: 0; right: 0; top: 24%; text-align: center; font-size: 120px; font-weight: 900; letter-spacing: .04em; color: #fff; text-shadow: 0 4px 0 #e2513a, 0 8px 18px rgba(0, 0, 0, .6); }
+    #finish { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 320px; text-align: center; padding: 22px 34px; background: rgba(10, 16, 28, .78); border: 2px solid #ffe27a; border-radius: 16px; }
+    #finish h1 { margin: 0 0 10px; font-size: 54px; color: #ffe27a; }
+    #finish .result { font-size: 22px; margin: 4px 0; font-variant-numeric: tabular-nums; }
+    #finish .hint { margin-top: 14px; font-size: 14px; opacity: .8; }
+  </style>
+  <!-- Three.js の版はここで固定する（0.186.1）。版と読み込み先を変えない。 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="hud">
+    <div id="hud-left">
+      <div class="panel">
+        <div class="label">LAP</div>
+        <div class="big"><span id="lapNow">1</span><span class="small"> / <span id="lapTotal">3</span></span></div>
+        <div class="row"><span class="label">TIME</span><span id="lapTime">0:00.000</span></div>
+        <div class="row"><span class="label">BEST</span><span id="bestLap">--:--.---</span></div>
+      </div>
+      <ol id="standings" class="panel"></ol>
+    </div>
+    <div id="hud-right">
+      <div class="panel">
+        <div class="label">順位</div>
+        <div class="big"><span id="place">1</span><span class="small"> / <span id="placeTotal">5</span></span></div>
+      </div>
+      <svg id="minimap" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div id="hud-bottom">
+      <div><span id="speed">0</span><span class="unit">km/h</span></div>
+      <div id="speedbar"><div id="speedfill"></div></div>
+    </div>
+    <div id="help">↑ / W アクセル　↓ / S ブレーキ・後退　← → / A D ハンドル　Shift / Space ドリフト（曲がりながら）　M サウンド</div>
+    <div id="banner"></div>
+    <div id="finish" hidden>
+      <h1>ゴール！</h1>
+      <div class="result" id="finishPlace"></div>
+      <div class="result" id="finishTime"></div>
+      <div class="result" id="finishBest"></div>
+      <div class="hint">R キーでもう一度走る</div>
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

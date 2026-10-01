@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12212b">
+  <title>隔環ネリス | 折光槽</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./src/style.css">
+  <!-- Three.js の版はここで固定する（0.186.1）。版と読み込み先を変えない。 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <main id="hud" aria-label="ゲーム情報">
+    <header class="topline">
+      <div class="identity"><span class="brand-mark" aria-hidden="true">◇</span><div><h1>隔環ネリス</h1><p>折光槽 / 閉鎖観測施設</p></div></div>
+      <div class="objective"><span>継殻兵をすべて停止させる</span><strong><b id="remaining">6</b> <small>/ <span id="total">6</span></small></strong><button id="restart" type="button" title="新しいゲームを始める">再出撃</button></div>
+    </header>
+    <div id="crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+    <div id="hitmarker" aria-hidden="true">×</div>
+    <div id="damage-flash" aria-hidden="true"></div>
+    <div id="notice" role="status"></div>
+    <footer class="bottomline">
+      <div class="health readout"><span class="label">HP / 装甲耐久</span><div><strong id="hp">100</strong><small>/ 100</small></div><div class="health-track"><i id="hp-fill"></i></div></div>
+      <div id="controls"><span><kbd>W A S D</kbd> 移動</span><span>マウスで照準・左クリックで射撃</span><span><kbd>R</kbd> リロード</span><p id="lock-hint">画面をクリックして照準を操作 · Esc でカーソルを戻す</p></div>
+      <div class="ammunition readout"><span class="label">灯芯九型 / 自動連射銃</span><div><strong id="ammo">18</strong><small>/ <span id="reserve">108</span></small></div><span id="reload-label">弾倉 18発 · 予備弾</span><div id="reload-track"><i id="reload-fill"></i></div></div>
+    </footer>
+  </main>
+  <section id="result" hidden aria-live="polite" aria-labelledby="result-title"><div class="result-panel"><span id="result-symbol" aria-hidden="true">◇</span><p id="result-caption">観測施設の安全を確認</p><h2 id="result-title">勝ち</h2><p id="result-description"></p><button id="play-again" type="button">もう一度出撃する</button><p class="result-help">WASD で移動 / 左クリックで射撃 / R でリロード</p></div></section>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

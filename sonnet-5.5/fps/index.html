@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KILNFALL — 塩精錬所・別棟</title>
+  <link rel="icon" href="data:,">
+  <style>
+    html, body { margin: 0; height: 100%; background: #101418; overflow: hidden; font-family: system-ui, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; }
+    canvas { display: block; }
+    #hud { position: fixed; inset: 0; color: #eaf6f8; text-shadow: 0 1px 3px #000, 0 0 2px #000; pointer-events: none; user-select: none; }
+
+    /* 照準 */
+    #crosshair { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+    #crosshair i { position: absolute; background: #eaf6f8; box-shadow: 0 0 2px #000; }
+    #crosshair .t { width: 2px; height: 9px; left: -1px; top: -17px; }
+    #crosshair .b { width: 2px; height: 9px; left: -1px; top: 8px; }
+    #crosshair .l { width: 9px; height: 2px; left: -17px; top: -1px; }
+    #crosshair .r { width: 9px; height: 2px; left: 8px; top: -1px; }
+    #crosshair .dot { width: 2px; height: 2px; left: -1px; top: -1px; background: #4fd8e8; }
+    #hitmarker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; }
+    #hitmarker::before, #hitmarker::after { content: ""; position: absolute; left: 14px; top: 0; width: 2px; height: 30px; background: #fff; box-shadow: 0 0 3px #000; }
+    #hitmarker::before { transform: rotate(45deg); }
+    #hitmarker::after { transform: rotate(-45deg); }
+    #hitmarker.on { opacity: 1; }
+    #hitmarker.kill::before, #hitmarker.kill::after { background: #ff5a3c; }
+
+    /* 被弾 */
+    #vignette { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, rgba(255,0,0,0) 45%, rgba(200,0,0,0.75) 100%); }
+    #hurt-dir { position: absolute; left: 50%; top: 50%; width: 0; height: 0; opacity: 0; }
+    #hurt-dir::before { content: ""; position: absolute; left: -60px; top: -150px; width: 120px; height: 34px; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255,60,40,0.95), rgba(255,60,40,0)); }
+
+    /* 数値 */
+    .panel { position: absolute; font-weight: 700; letter-spacing: 0.04em; }
+    #stat-hp { left: 24px; bottom: 24px; width: 260px; }
+    #stat-hp .row { display: flex; align-items: baseline; gap: 10px; }
+    #hp-label { font-size: 14px; color: #4fd8e8; }
+    #hp-text { font-size: 40px; line-height: 1; }
+    #shield { font-size: 13px; color: #7dffb0; }
+    #shield[hidden] { display: none; }
+    #hp-bar { margin-top: 6px; height: 10px; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.35); }
+    #hp-fill { height: 100%; width: 100%; background: #4fd8e8; transition: width 0.1s; }
+    #hp-fill.low { background: #ff5a3c; }
+    #stat-ammo { right: 28px; bottom: 24px; text-align: right; }
+    #ammo-line { font-size: 44px; line-height: 1; }
+    #ammo-line .sep { opacity: 0.5; margin: 0 6px; font-size: 28px; }
+    #reserve { font-size: 28px; opacity: 0.85; }
+    #weapon-name { font-size: 13px; color: #4fd8e8; margin-top: 4px; }
+    #ammo-note { font-size: 15px; height: 20px; margin-top: 2px; color: #ffd27a; }
+    #stat-enemies { left: 50%; top: 18px; transform: translateX(-50%); text-align: center; }
+    #enemies-line { font-size: 15px; color: #4fd8e8; }
+    #enemies-left { font-size: 34px; margin: 0 4px; color: #eaf6f8; }
+    #enemies-sub { font-size: 13px; opacity: 0.8; }
+    #stat-title { left: 24px; top: 18px; font-size: 13px; opacity: 0.8; }
+    #stat-title b { font-size: 18px; letter-spacing: 0.18em; color: #4fd8e8; }
+    #hint { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); font-size: 14px; background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: 4px; white-space: nowrap; }
+    #hint[hidden], #overlay[hidden] { display: none; }
+
+    /* 結果 */
+    #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(6,10,14,0.66); pointer-events: auto; }
+    #result-title { font-size: 72px; font-weight: 800; letter-spacing: 0.1em; }
+    #overlay[data-result="won"] #result-title { color: #6ff0a0; }
+    #overlay[data-result="lost"] #result-title { color: #ff5a3c; }
+    #result-sub { font-size: 20px; opacity: 0.9; }
+    #restart { margin-top: 12px; font: inherit; font-size: 18px; font-weight: 700; padding: 10px 28px; color: #101418; background: #4fd8e8; border: 0; border-radius: 4px; cursor: pointer; }
+  </style>
+  <!-- Three.js の版はここで固定する（0.186.1）。版と読み込み先を変えない。 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="hud">
+    <div id="vignette"></div>
+    <div id="hurt-dir"></div>
+    <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="dot"></i></div>
+    <div id="hitmarker"></div>
+
+    <div id="stat-title" class="panel"><b>KILNFALL</b><br>塩精錬所・別棟</div>
+    <div id="stat-enemies" class="panel">
+      <div id="enemies-line">残りの敵<span id="enemies-left">6</span>/ <span id="enemies-total">6</span></div>
+      <div id="enemies-sub">撃破 <span id="kills">0</span></div>
+    </div>
+    <div id="stat-hp" class="panel">
+      <div class="row"><span id="hp-label">HP</span><span id="hp-text">100</span><span id="shield" hidden></span></div>
+      <div id="hp-bar"><div id="hp-fill"></div></div>
+    </div>
+    <div id="stat-ammo" class="panel">
+      <div id="ammo-line"><span id="ammo">24</span><span class="sep">/</span><span id="reserve">96</span></div>
+      <div id="weapon-name">レン-7 パルスカービン</div>
+      <div id="ammo-note"></div>
+    </div>
+    <div id="hint">クリックで視点操作 ／ WASD 移動 ／ 左クリック 射撃 ／ R リロード ／ Shift ダッシュ</div>
+
+    <div id="overlay" hidden>
+      <div id="result-title"></div>
+      <div id="result-sub"></div>
+      <button id="restart" type="button">もう一度 (Enter)</button>
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
